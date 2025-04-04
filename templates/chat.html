@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Chatbot</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #000;
+            --chat-bg: #f9f9f9;
+            --user-msg-bg: #8e6df2;
+            --bot-msg-bg: #7e22ce;
+            --btn-bg: #9333ea;
+            --btn-hover-bg: #7e22ce;
+            --border-color: #ddd;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #fff;
+            --chat-bg: #1e1e1e;
+            --user-msg-bg: #8e6df2;
+            --bot-msg-bg: #9333ea;
+            --btn-bg: #9333ea;
+            --btn-hover-bg: #7e22ce;
+            --border-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 20%;
+            background: var(--bg-color);
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 2px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .chat-history {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .chat-history div {
+            padding: 5px;
+            background: var(--chat-bg);
+            border-radius: 5px;
+            font-size: 14px;
+            color: var(--text-color); /* Ensure text color adapts */
+            border: 1px solid var(--border-color);
+        }
+
+
+        .container {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 0;
+        }
+
+        #chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: var(--chat-bg);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 160px);
+        }
+
+        .message {
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 75%;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background-color: var(--user-msg-bg);
+            align-self: flex-end;
+            color: white;
+        }
+
+        .bot-message {
+            background-color: var(--bot-msg-bg);
+            align-self: flex-start;
+            color: white;
+            font-weight: bold;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: var(--btn-bg);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Chat History</h3>
+        <div id="chat-history" class="chat-history"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>Chat with our Mental Health Assistant</h2>
+            <span class="theme-toggle" onclick="toggleTheme()">🌙</span>
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="input-container">
+            <input type="text" id="user-input" onkeydown="handleKeyPress(event)" placeholder="Type your message...">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("Page loaded, applying theme and loading history.");
+            applySavedTheme();
+            loadChatHistory();
+
+            // Attach event listeners correctly for send button
+            document.getElementById("send-button")?.addEventListener("click", sendMessage);
+            document.getElementById("user-input")?.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") sendMessage();
+            });
+        });
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.body.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme); // Save theme to localStorage
+            updateThemeButton(newTheme); // Update the button icon
+        }
+
+        function applySavedTheme() {
+            let savedTheme = localStorage.getItem("theme") || "light";
+            document.body.setAttribute("data-theme", savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const themeToggleButton = document.querySelector(".theme-toggle");
+            if (themeToggleButton) {
+                themeToggleButton.textContent = theme === "dark" ? "☀️" : "🌙";
+            }
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await fetch('/api/chat-history'); // Adjust the endpoint
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json(); // Get JSON response
+
+                // Get the chat history bar element
+                const chatHistoryBar = document.getElementById("chat-history");
+
+                if (!chatHistoryBar) return;
+
+                // Clear the chat history bar before displaying new messages
+                chatHistoryBar.innerHTML = "";
+
+                // Display the full chat history in the history bar
+                if (data.full_chat_history) {
+                    data.full_chat_history.forEach(msg => {
+                        appendMessage(msg.message, "user-message", chatHistoryBar); // User message
+                        appendMessage(msg.reply, "bot-message", chatHistoryBar); // Bot reply
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading chat history:", error);
+                const chatBox = document.getElementById("chat-box");
+                if (chatBox) {
+                    chatBox.innerHTML = "<p>Failed to load chat history. Please try again later.</p>";
+                }
+            }
+        }
+
+// Call the loadChatHistory function to populate chat history when the page loads
+
+
+        async function sendMessage() {
+            let input = document.getElementById("user-input");
+            let message = input?.value.trim();
+
+            if (!message) return;
+
+            appendMessage(message, "user-message", document.getElementById("chat-box"));
+
+            // Disable input field while waiting for the response
+            input.disabled = true;
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) throw new Error("Failed to send message");
+
+                const data = await response.json();
+                appendMessage(data.reply || "Something went wrong! ❌", "bot-message", document.getElementById("chat-box"));
+
+                // Clear input field after sending the message
+                input.value = "";
+                input.focus(); // Ensure the user can type the next message immediately
+
+            } catch (error) {
+                console.error("Error sending message:", error);
+                appendMessage("Failed to connect. Please try again! ❌", "bot-message", document.getElementById("chat-box"));
+            } finally {
+                // Re-enable the input field after the response
+                input.disabled = false;
+            }
+        }
+
+        function appendMessage(text, className, chatBox) {
+            if (!chatBox) return; // Prevent errors if chatBox is not found
+
+            let msgDiv = document.createElement("div");
+            msgDiv.classList.add("message", className);
+            msgDiv.textContent = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the bottom
+        }
+
+        // Load chat history when the page loads
+        loadChatHistory();
+
+        // Load chat history on page load
+        
+
+        
+    </script>
+</body>
+</html>

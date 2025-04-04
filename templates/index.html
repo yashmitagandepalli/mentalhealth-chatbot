@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: black;
+            height: 100vh; /* Ensure the body takes full height */
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header styling */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end; /* Move login & signup to the right */
+            padding: 15px 20px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 1; /* Ensure header appears above the video */
+        }
+
+        /* Buttons for Login & Signup */
+        .header .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header .buttons button {
+            padding: 10px 20px;
+            background-color: #0c0c0c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .header .buttons button:hover {
+            background-color: #333; /* Darken the background color on hover */
+        }
+
+        /* Guest Chat Button */
+        .guest-chat-btn {
+            position: absolute; /* Ensures exact placement */
+            bottom: 25%; /* Adjust for vertical position */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Perfect centering */
+            padding: 12px 18px;
+            background: #0c0c0c;
+            color: rgb(250, 250, 244);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1; /* Ensure button appears above the video */
+        }
+
+        /* Video background styling */
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Make sure video stays behind content */
+            object-fit: cover; /* Make video fill the screen */
+            opacity: 0.9; /* Increased opacity to make the video less transparent */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background -->
+    <video autoplay muted loop class="video-background">
+        <source src="{{ url_for('static', filename='trail1.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Header with Login & Signup Buttons -->
+    <div class="header">
+        <div class="buttons">
+            <button onclick="window.location.href='login.html'">Login</button>
+            <button onclick="window.location.href='signup.html'">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Guest Chat Button -->
+    <button onclick="window.location.href='/chat'" class="guest-chat-btn">
+        💬 Start a Guest Chat
+    </button>
+
+</body>
+</html>
